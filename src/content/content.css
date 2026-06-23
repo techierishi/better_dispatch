@@ -1,0 +1,25 @@
+.bd-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, #238636, #2ea043);
+  color: #fff !important;
+  border: 1px solid #2ea043;
+  border-radius: 6px;
+  padding: 5px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none !important;
+  transition: background 0.2s;
+  margin-left: 8px;
+  line-height: 20px;
+}
+
+.bd-button:hover {
+  background: linear-gradient(135deg, #2ea043, #3fb950);
+}
+
+.bd-button .bd-icon {
+  font-size: 16px;
+}

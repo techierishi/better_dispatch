@@ -1,0 +1,189 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
+  background: #0d1117;
+  color: #c9d1d9;
+  min-height: 100vh;
+  padding: 24px;
+}
+
+.settings-container {
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+header {
+  margin-bottom: 32px;
+}
+
+header h1 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #f0f6fc;
+  margin-bottom: 4px;
+}
+
+.subtitle {
+  color: #8b949e;
+  font-size: 14px;
+}
+
+.card {
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.card h2 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #f0f6fc;
+  margin-bottom: 8px;
+}
+
+.hint {
+  color: #8b949e;
+  font-size: 12px;
+  margin-bottom: 12px;
+}
+
+.hint code {
+  background: #21262d;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  color: #79c0ff;
+}
+
+.input-group {
+  display: flex;
+  gap: 8px;
+}
+
+input[type="text"],
+input[type="password"] {
+  flex: 1;
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  padding: 8px 12px;
+  color: #c9d1d9;
+  font-size: 14px;
+  font-family: 'SFMono-Regular', Consolas, monospace;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+input:focus {
+  border-color: #58a6ff;
+}
+
+.btn-icon {
+  background: #21262d;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #c9d1d9;
+  transition: background 0.2s;
+}
+
+.btn-icon:hover {
+  background: #30363d;
+}
+
+.btn-primary {
+  background: #238636;
+  border: 1px solid #2ea043;
+  border-radius: 6px;
+  padding: 8px 16px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+.btn-primary:hover {
+  background: #2ea043;
+}
+
+.btn-danger {
+  background: transparent;
+  border: 1px solid #f85149;
+  border-radius: 6px;
+  padding: 6px 12px;
+  color: #f85149;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-danger:hover {
+  background: rgba(248, 81, 73, 0.1);
+}
+
+.secret-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+  align-items: center;
+}
+
+.secret-row .key-display {
+  font-family: 'SFMono-Regular', Consolas, monospace;
+  font-size: 13px;
+  color: #79c0ff;
+  min-width: 200px;
+}
+
+.secret-row .value-display {
+  font-family: 'SFMono-Regular', Consolas, monospace;
+  font-size: 13px;
+  color: #8b949e;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.add-row {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #21262d;
+}
+
+.status {
+  margin-top: 8px;
+  font-size: 12px;
+}
+
+.status.saved {
+  color: #3fb950;
+}
+
+.status.error {
+  color: #f85149;
+}
+
+.save-status {
+  text-align: center;
+  padding: 12px;
+  font-size: 13px;
+  color: #3fb950;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.save-status.visible {
+  opacity: 1;
+}

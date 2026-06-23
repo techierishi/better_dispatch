@@ -1,0 +1,51 @@
+name: Production Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      deploy_notes:
+        type: string
+        description: "Release notes (Fallback text box for standard GitHub UI)"
+      target_microservices:
+        type: string
+        description: "Comma-separated services (Fallback text box for standard GitHub UI)"
+      feature_flags:
+        type: string
+        description: "Selected flags (Fallback text box for standard GitHub UI)"
+      better_dispatch_input:
+        description: "Better Dispatch form configuration (do not modify)"
+        type: string
+        required: false
+        default: |
+          version: "1.0.0"
+          elements:
+            # Maps to the 'deploy_notes' input above
+            - id: deploy_notes
+              type: textarea
+              editor: prism
+              language: markdown
+              placeholder: "Enter markdown release logs here..."
+
+            # Maps to the 'target_microservices' input above
+            - id: target_microservices
+              type: multiselect
+              searchable: true
+              # Declarative HTTP call config to fetch dynamic list options
+              datasource:
+                url: "https://company.com"
+                method: "GET"
+                headers:
+                  Authorization: "Bearer ${SETTINGS_INTERNAL_TOKEN}"
+                dataPath: "data.services"
+                mapping:
+                  label: "display_name"
+                  value: "service_id"
+
+            # Maps to the 'feature_flags' input above
+            - id: feature_flags
+              type: multiselect
+              searchable: true
+              options:
+                - beta-dashboard
+                - new-payment-gateway
+                - performance-logs
