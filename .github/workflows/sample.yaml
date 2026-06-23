@@ -1,5 +1,6 @@
-name: Production Deployment
+name: Test Better Dispatch
 
+  
 on:
   workflow_dispatch:
     inputs:
@@ -12,22 +13,19 @@ on:
       feature_flags:
         type: string
         description: "Selected flags (Fallback text box for standard GitHub UI)"
-      better_dispatch_input:
-        description: "Better Dispatch form configuration (do not modify)"
+
+      better_dispatch_inputs:
         type: string
         required: false
         default: |
           version: "1.0.0"
           elements:
-            # Maps to the 'deploy_notes' input above
-            - id: deploy_notes
+            - id: deploy_notes_custom
               type: textarea
               editor: prism
               language: markdown
               placeholder: "Enter markdown release logs here..."
-
-            # Maps to the 'target_microservices' input above
-            - id: target_microservices
+            - id: target_microservices_custom
               type: multiselect
               searchable: true
               # Declarative HTTP call config to fetch dynamic list options
@@ -35,17 +33,22 @@ on:
                 url: "https://company.com"
                 method: "GET"
                 headers:
-                  Authorization: "Bearer ${SETTINGS_INTERNAL_TOKEN}"
-                dataPath: "data.services"
+                  Authorization: "Bearer \${SETTINGS_INTERNAL_TOKEN}"
+                dataPath: "data.services" # JSON path selector for the array
                 mapping:
-                  label: "display_name"
-                  value: "service_id"
-
-            # Maps to the 'feature_flags' input above
-            - id: feature_flags
+                  label: "display_name"   # What the user sees in the searchable dropdown
+                  value: "service_id"     # The string value sent on submission
+            - id: feature_flags_custom
               type: multiselect
               searchable: true
               options:
                 - beta-dashboard
                 - new-payment-gateway
                 - performance-logs
+jobs:
+  log-form-data:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Display Form Output
+        run: |
+          echo "Text entered: ${{ inputs.better_dispatch_inputs }}"

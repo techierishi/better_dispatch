@@ -2,12 +2,12 @@
   import { onMount } from 'svelte';
   import TextareaEditor from './components/TextareaEditor.svelte';
   import SearchableSelect from './components/SearchableSelect.svelte';
-  import Multiselect from './components/Multiselect.svelte';
   import { extractBetterDispatchFromInput } from '../utils/yaml-parser.js';
 
   let loading = true;
   let error = null;
   let config = null;
+  let standardInputs = [];
   let owner = '';
   let repo = '';
   let ref = '';
@@ -20,7 +20,7 @@
   let submitResult = null;
 
   $: elements = config?.elements || [];
-  $: serializedValues = serializeAll(formValues, elements);
+  $: serializedValues = serializeAll(formValues, elements, standardInputs);
 
   onMount(async () => {
     const params = parseParams();
@@ -34,15 +34,24 @@
       const secretsResp = await sendMsg('GET_SECRETS');
       secrets = secretsResp.secrets || {};
 
-      const workflowResp = await sendMsg('FETCH_WORKFLOW', {
-        owner, repo, path: workflowPath, ref
-      });
-      if (!workflowResp.success) throw new Error(workflowResp.error);
+      if (params.config) {
+        config = params.config;
+        standardInputs = params.config.standardInputs || [];
+        console.log('[BD] config from URL, elements:', config?.elements?.length);
+      } else {
+        const workflowResp = await sendMsg('FETCH_WORKFLOW', {
+          owner, repo, path: workflowPath, ref
+        });
+        if (!workflowResp.success) throw new Error(workflowResp.error);
 
-      const parsed = extractBetterDispatchFromInput(workflowResp.content);
-      if (!parsed) throw new Error('No Better Dispatch config found in workflow inputs');
-
-      config = parsed;
+        const parsed = extractBetterDispatchFromInput(workflowResp.content);
+        if (!parsed || !parsed.elements || parsed.elements.length === 0) {
+          throw new Error('No Better Dispatch inputs found.');
+        }
+        config = parsed;
+        standardInputs = parsed.standardInputs || [];
+        console.log('[BD] config parsed, elements:', config.elements.map(e => e.id));
+      }
 
       for (const el of elements) {
         formValues[el.id] = el.type === 'multiselect' ? [] : '';
@@ -59,12 +68,18 @@
 
   function parseParams() {
     const params = new URLSearchParams(window.location.search);
+    let config = null;
+    try {
+      const raw = params.get('config');
+      if (raw) config = JSON.parse(raw);
+    } catch {}
     return {
       owner: params.get('owner') || '',
       repo: params.get('repo') || '',
       ref: params.get('ref') || 'main',
       workflowPath: params.get('workflowPath') || '',
-      workflowFilename: params.get('workflowFilename') || ''
+      workflowFilename: params.get('workflowFilename') || '',
+      config
     };
   }
 
@@ -106,11 +121,25 @@
     return String(value || '');
   }
 
-  function serializeAll(values, elems) {
+  function serializeAll(values, elems, standardInputs) {
     const result = {};
+    const customValues = {};
+
     for (const el of elems) {
-      result[el.id] = serializeValue(values[el.id], el);
+      const key = el.submitAs || el.id;
+      const val = serializeValue(values[el.id], el);
+
+      if (standardInputs.includes(key)) {
+        result[key] = val;
+      } else {
+        customValues[key] = val;
+      }
     }
+
+    if (Object.keys(customValues).length > 0) {
+      result['better_dispatch_inputs'] = JSON.stringify(customValues);
+    }
+
     return result;
   }
 
@@ -203,12 +232,19 @@
               on:change={(e) => formValues[el.id] = e.detail}
             />
           {:else if el.type === 'multiselect'}
-            <Multiselect
-              {el}
-              options={getOptions(el)}
-              value={formValues[el.id]}
-              on:change={(e) => formValues[el.id] = e.detail}
-            />
+            <div class="multi-wrap">
+              <div class="multi-box">
+                <div class="pills">
+                  {#each (formValues[el.id] || []) as val}
+                    <span class="pill">
+                      {val}
+                      <button type="button" class="pill-x" on:click={(e) => { e.preventDefault(); formValues[el.id] = (formValues[el.id] || []).filter(v => v !== val); }}>×</button>
+                    </span>
+                  {/each}
+                  <input type="text" class="multi-input" placeholder={el.placeholder || 'Add...'} on:keydown={(e) => { if (e.key === 'Enter' && e.target.value) { formValues[el.id] = [...(formValues[el.id] || []), e.target.value]; e.target.value = ''; } }} />
+                </div>
+              </div>
+            </div>
           {:else}
             <input
               type="text"
@@ -376,6 +412,43 @@
     background: #f8514920;
     border: 1px solid #f85149;
     color: #f85149;
+  }
+
+  .multi-wrap {
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 4px 8px;
+    background: #161b22;
+  }
+  .multi-box {
+    cursor: text;
+  }
+  .pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    align-items: center;
+  }
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #1f6feb33;
+    color: #58a6ff;
+    padding: 2px 4px 2px 10px;
+    border-radius: 12px;
+    font-size: 13px;
+  }
+  .pill-x {
+    background: none; border: none;
+    color: #58a6ff; cursor: pointer; font-size: 16px;
+    padding: 0 4px; line-height: 1;
+  }
+  .multi-input {
+    flex: 1; min-width: 80px;
+    background: transparent; border: none;
+    padding: 4px; color: #c9d1d9;
+    font-size: 14px; outline: none;
   }
 
   .submit-btn {

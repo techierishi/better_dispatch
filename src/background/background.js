@@ -2,13 +2,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   const { type, payload } = message;
 
   if (type === 'OPEN_BETTER_DISPATCH') {
-    const { owner, repo, ref, workflowPath, workflowFilename } = payload;
+    const { owner, repo, ref, workflowPath, workflowFilename, config } = payload;
     const tabUrl = chrome.runtime.getURL('tab/index.html') +
       `?owner=${encodeURIComponent(owner)}` +
       `&repo=${encodeURIComponent(repo)}` +
       `&ref=${encodeURIComponent(ref)}` +
       `&workflowPath=${encodeURIComponent(workflowPath)}` +
-      `&workflowFilename=${encodeURIComponent(workflowFilename)}`;
+      `&workflowFilename=${encodeURIComponent(workflowFilename)}` +
+      `&config=${encodeURIComponent(config ? JSON.stringify(config) : '')}`;
     chrome.tabs.create({ url: tabUrl, active: true });
     sendResponse({ success: true });
   }
@@ -50,7 +51,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 async function fetchWorkflowContent(owner, repo, path, ref) {
   const { github_token } = await chrome.storage.local.get(['github_token']);
-  const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${ref}`;
+  const encodedPath = path.split('/').map(encodeURIComponent).join('/');
+  const url = `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/contents/${encodedPath}?ref=${encodeURIComponent(ref)}`;
   const headers = {
     'Accept': 'application/vnd.github.v3+json',
     'X-GitHub-Api-Version': '2022-11-28'
@@ -58,7 +60,10 @@ async function fetchWorkflowContent(owner, repo, path, ref) {
   if (github_token) headers['Authorization'] = `token ${github_token}`;
 
   const response = await fetch(url, { headers });
-  if (!response.ok) throw new Error(`Failed to fetch workflow: ${response.status}`);
+  if (!response.ok) {
+    const text = await response.text().catch(() => '');
+    throw new Error(`GitHub API ${response.status} fetching ${path} on ${ref}${text ? ': ' + text.slice(0, 200) : ''}`);
+  }
 
   const data = await response.json();
   return atob(data.content);

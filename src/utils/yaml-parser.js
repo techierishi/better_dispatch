@@ -3,17 +3,66 @@ export function extractBetterDispatchFromInput(yamlText) {
   const inputs = parsed?.on?.workflow_dispatch?.inputs;
   if (!inputs) return null;
 
-  const dispatchInput = inputs['better_dispatch_input'];
-  if (!dispatchInput) return null;
+  console.log('[BD Parser] standard inputs:', Object.keys(inputs));
 
-  const defaultStr = dispatchInput.default || dispatchInput['default'];
-  if (!defaultStr || typeof defaultStr !== 'string') return null;
+  const result = [];
 
-  try {
-    return parseYamlString(defaultStr);
-  } catch {
-    return null;
+  for (const [id, def] of Object.entries(inputs)) {
+    if (id === 'better_dispatch_inputs') continue;
+    result.push(standardToElement(id, def));
   }
+
+  const enhancedInput = inputs['better_dispatch_inputs'];
+  if (enhancedInput) {
+    const defaultStr = enhancedInput.default || enhancedInput['default'];
+    if (defaultStr && typeof defaultStr === 'string') {
+      try {
+        const enhancedConfig = parseYamlString(defaultStr);
+        const enhancedElements = enhancedConfig?.elements || [];
+        for (const el of enhancedElements) {
+          if (el.id) result.push(el);
+        }
+        console.log('[BD Parser] enhanced elements appended:', enhancedElements.length);
+      } catch (e) {
+        console.warn('[BD Parser] enhanced parse failed:', e);
+      }
+    }
+  }
+
+  const standardNames = Object.keys(inputs).filter(k => k !== 'better_dispatch_inputs');
+  console.log('[BD Parser] total elements:', result.map(e => e.id));
+  return { version: '1.0.0', elements: result, standardInputs: standardNames };
+}
+
+function standardToElement(id, def) {
+  const el = { id, type: 'text', description: def.description || '', required: !!def.required };
+
+  switch (def.type) {
+    case 'choice':
+      el.type = 'select';
+      el.searchable = true;
+      el.options = (def.options || []).map(o =>
+        typeof o === 'string' ? { label: o, value: o } : o
+      );
+      break;
+    case 'boolean':
+      el.type = 'select';
+      el.options = [
+        { label: 'true', value: 'true' },
+        { label: 'false', value: 'false' }
+      ];
+      break;
+    case 'environment':
+      el.type = 'text';
+      break;
+    default:
+      el.type = 'text';
+      break;
+  }
+
+  if (def.default !== undefined) el.placeholder = String(def.default);
+
+  return el;
 }
 
 function parseYamlString(text) {
@@ -94,7 +143,7 @@ function parseArrayLines(lines, startIndex, baseIndent) {
         const val = itemValue.substring(colonIdx + 1).trim();
         const obj = { [key]: parseScalar(val) };
         const nextIndent = peekNextIndent(lines, i + 1);
-        if (nextIndent > currentIndent + 2) {
+        if (nextIndent > currentIndent) {
           const moreResult = parseLines(lines, i + 1, nextIndent);
           Object.assign(obj, moreResult.value);
           result.push(obj);
