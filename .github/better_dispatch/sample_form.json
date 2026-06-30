@@ -1,0 +1,44 @@
+{
+  "showQuestionNumbers": false,
+  "completeText": "Dispatch Workflow ⚡",
+  "pages": [
+    {
+      "elements": [
+        {
+          "type": "comment",
+          "name": "deploy_notes_custom",
+          "title": "Deploy Notes",
+          "placeholder": "Enter markdown release logs here...",
+          "rows": 6
+        },
+        {
+          "type": "tagbox",
+          "name": "target_microservices_custom",
+          "title": "Target Microservices",
+          "placeholder": "Search and select...",
+          "choicesByUrl": {
+            "url": "https://company.com",
+            "method": "GET",
+            "headers": {
+              "Authorization": "Bearer ${SETTINGS_INTERNAL_TOKEN}"
+            },
+            "path": "data.services",
+            "valueName": "service_id",
+            "titleName": "display_name"
+          }
+        },
+        {
+          "type": "tagbox",
+          "name": "feature_flags_custom",
+          "title": "Feature Flags",
+          "placeholder": "Select flags...",
+          "choices": [
+            "beta-dashboard",
+            "new-payment-gateway",
+            "performance-logs"
+          ]
+        }
+      ]
+    }
+  ]
+}

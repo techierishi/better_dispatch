@@ -14,41 +14,14 @@ on:
         type: string
         description: "Selected flags (Fallback text box for standard GitHub UI)"
 
-      better_dispatch_inputs:
+      better_dispatch_form:
         type: string
         required: false
-        default: |
-          version: "1.0.0"
-          elements:
-            - id: deploy_notes_custom
-              type: textarea
-              editor: prism
-              language: markdown
-              placeholder: "Enter markdown release logs here..."
-            - id: target_microservices_custom
-              type: multiselect
-              searchable: true
-              # Declarative HTTP call config to fetch dynamic list options
-              datasource:
-                url: "https://company.com"
-                method: "GET"
-                headers:
-                  Authorization: "Bearer \${SETTINGS_INTERNAL_TOKEN}"
-                dataPath: "data.services" # JSON path selector for the array
-                mapping:
-                  label: "display_name"   # What the user sees in the searchable dropdown
-                  value: "service_id"     # The string value sent on submission
-            - id: feature_flags_custom
-              type: multiselect
-              searchable: true
-              options:
-                - beta-dashboard
-                - new-payment-gateway
-                - performance-logs
+        default: .github/better_dispatch/sample_form.json
 jobs:
   log-form-data:
     runs-on: ubuntu-latest
     steps:
       - name: Display Form Output
         run: |
-          echo "Text entered: ${{ inputs.better_dispatch_inputs }}"
+          echo "Form file: ${{ inputs.better_dispatch_form }}"
