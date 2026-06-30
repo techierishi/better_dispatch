@@ -1,0 +1,17 @@
+name: Sample Workflow One
+
+  
+on:
+  workflow_dispatch:
+    inputs:
+      better_dispatch_form:
+        type: string
+        required: false
+        default: .github/better_dispatch/sample_form_one.json
+jobs:
+  log-form-data:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Display Form Output
+        run: |
+          echo "Form file: ${{ inputs.better_dispatch_form }}"
