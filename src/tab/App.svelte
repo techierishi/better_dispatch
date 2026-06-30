@@ -1,7 +1,7 @@
 <script>
   import { onMount, onDestroy } from 'svelte';
   import { Model } from 'survey-core';
-  import 'survey-core/survey-core.min.css';
+  import 'survey-core/survey-core.fontless.min.css';
   import { extractBetterDispatchFromInput } from '../utils/yaml-parser.js';
   import { resolve, resolveObject } from '../utils/interpolate.js';
 
