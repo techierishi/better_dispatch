@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Better Dispatch",
   "version": "1.0.0",
-  "description": "Advanced workflow_dispatch UI for GitHub Actions with code editors, searchable dropdowns, and dynamic data fetching.",
+  "description": "Advanced workflow_dispatch UI for GitHub Actions with SurveyJS-powered dynamic forms.",
   "permissions": [
     "storage",
     "activeTab"

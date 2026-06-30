@@ -1,9 +1,9 @@
 # Technical Specification: Better Dispatch Chrome Extension
 
-**Better Dispatch** is a developer-focused productivity Chrome Extension that replaces the rigid, 5-element constraint of the native GitHub Actions `workflow_dispatch` web form with an advanced, developer-friendly interface. Forms are defined via SurveyJS JSON files in your repository and rendered using SurveyJS's rich component library.
+**Better Dispatch** is a developer-focused productivity Chrome Extension that replaces the rigid, 5-element constraint of the native GitHub Actions `workflow_dispatch` web form with an advanced, developer-friendly interface. Forms are defined via SurveyJS JSON files in your repository and rendered using SurveyJS's vanilla JS renderer.
 
 ## Tech-Stack
-Svelte, SurveyJS
+Preact, survey-core, survey-js-ui
 
 ---
 
@@ -93,7 +93,7 @@ on:
 [ GitHub Actions UI ] --(Scrapes DOM/Detects workflow file)--> [ Content Script ]
                                                                     │ (Injects Button)
                                                                     ▼
-[ Native API Run ] <--(Dispatches JSON via REST API)-- [ Extension Tab: SurveyJS Form ]
+[ Native API Run ] <--(Dispatches JSON via REST API)-- [ Extension Tab: SurveyJS (Preact) ]
                                                                     ▲
                                                                     │ (Reads Token)
                                                            [ Settings Storage ]
@@ -104,7 +104,7 @@ on:
 2. **Parsing:** When the manual trigger panel is opened, the script fetches the workflow YAML via the GitHub REST API, reads the `better_dispatch_form` input's default value to locate the form definition file, then fetches that file.
 3. **UI Mutation:** If detected, a custom action button styled as **"Better Dispatch ⚡"** is appended alongside the native "Run workflow" trigger button.
 4. **Context Handoff:** Clicking the button passes repository coordinates (`owner`, `repo`, `ref`) to a new extension workspace tab.
-5. **Dynamic Form Construction:** The workspace creates a SurveyJS model from the JSON, pre-fetches any datasources via the extension's background script (bypassing CORS), and renders the form.
+5. **Dynamic Form Construction:** The workspace creates a SurveyJS model (`survey-core`) from the JSON, pre-fetches any datasources via the extension's background script (bypassing CORS), and renders using `survey-js-ui` (Preact-based renderer).
 6. **Submission:** SurveyJS validates the input, then the extension maps question values to GitHub inputs (standard names go directly, custom names are packed into `better_dispatch_form` as JSON) and dispatches via the GitHub API.
 
 ---
